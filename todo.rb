@@ -41,10 +41,20 @@ end
 
 # render existing list, based on position in array
 get "/lists/:id" do
-  @id = params[:id].to_i
-  @list = session[:lists][@id]
+  id = params[:id].to_i
+  @list = session[:lists][id]
+  
+  #redirect "/lists" unless @list
 
   erb :list, layout: :layout
+end
+
+# edit existing list
+get "/lists/:id/edit" do
+  id = params[:id].to_i
+  @list = session[:lists][id]
+
+  erb :edit_list, layout: :layout
 end
 
 # return error message if name is invalid, nil if valid
@@ -79,4 +89,29 @@ post "/list/:id" do
   list[:todos] << todo_name
 
   redirect "/lists/#{id}"
+end
+
+# change list properties
+post "/lists/:id" do
+  list_name = params[:list_name].strip
+  id = params[:id].to_i
+  @list = session[:lists][id]
+  
+  error = error_for_list_name(list_name)
+  if error
+    session[:error] = error
+    erb :edit_list, layout: :layout  
+  else
+    @list[:name] = list_name
+    session[:success] = "The list has been updated."
+    redirect "/lists/#{id}"
+  end
+end
+
+# deletes list
+post "/lists/:id/destroy" do
+  id = params[:id].to_i
+  session[:lists].delete_at(id)
+  session[:success] = "The list has been deleted."
+  redirect "/lists"
 end
