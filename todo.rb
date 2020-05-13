@@ -80,13 +80,32 @@ post "/lists" do
   end
 end
 
-# create todo
-post "/list/:id" do
-  todo_name = params[:todo_name]
-  
+def error_for_todo(todo, id)
+  todo_names = session[:lists][id][:todos].map do |k, v|
+    
+  end
+
+  if !(1..100).cover?(todo.size)
+    "Todo must be between 1 and 100 characters."
+  elsif 
+
+
+  end
+end
+
+# add a new todo to list
+post "/lists/:id/todos" do 
+  todo = params[:todo].strip
   id = params[:id].to_i
-  list = session[:lists][id]
-  list[:todos] << todo_name
+
+  error = error_for_todo(todo, id)
+  if error
+    session[:error] = error
+  else
+    list = session[:lists][id]
+    list[:todos] << {name: params[:todo], completed: false}
+    session[:success] = "The todo was added."
+  end
 
   redirect "/lists/#{id}"
 end

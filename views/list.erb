@@ -10,22 +10,22 @@
   </header>
   
   <ul>
-    <% @list[:todos].each do |todo| %>
+    <% @list[:todos].each_with_index do |todo, index| %>
       <li>
-        <h2><%= todo %></h2>
+        <h3><%= todo[:name] %></h3>
       </li>
     <% end %>
   </ul>
 
 </section>
 
-<form action="/list/<%= params[:id] %>" method="post">
+<form action="/lists/<%= params[:id] %>/todos" method="post">
   <dl>
     <dt>
-      <label for="todo_name">Enter a new todo item:</label>
+      <label for="todo">Enter a new todo item:</label>
     </dt>
     <dd>
-      <input name="todo_name" placeholder="Something to do" type="text" value="">
+      <input name="todo" id="todo" placeholder="Something to do" type="text" value="">
     </dd>
   </dl>
   <fieldset class="actions">
