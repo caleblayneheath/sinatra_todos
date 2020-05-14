@@ -41,18 +41,21 @@ end
 
 # render existing list, based on position in array
 get "/lists/:id" do
-  id = params[:id].to_i
-  @list = session[:lists][id]
+  @list_id = params[:id].to_i
+  @list = session[:lists][@list_id]
   
-  #redirect "/lists" unless @list
-
-  erb :list, layout: :layout
+  if @list
+    erb :list, layout: :layout
+  else
+    session[:error] = "The specified list was not found."
+    redirect "/lists"
+  end
 end
 
 # edit existing list
 get "/lists/:id/edit" do
-  id = params[:id].to_i
-  @list = session[:lists][id]
+  @list_id = params[:id].to_i
+  @list = session[:lists][@list_id]
 
   erb :edit_list, layout: :layout
 end
@@ -80,41 +83,39 @@ post "/lists" do
   end
 end
 
-def error_for_todo(todo, id)
-  todo_names = session[:lists][id][:todos].map do |k, v|
-    
-  end
+def error_for_todo(todo) #, id)
+  # todo_names = session[:lists][id][:todos].map { |todo| todo[:name] }
 
   if !(1..100).cover?(todo.size)
     "Todo must be between 1 and 100 characters."
-  elsif 
-
-
+  # elsif todo_names.include?(todo)
+  #   "Todo must be unique"
   end
 end
 
 # add a new todo to list
 post "/lists/:id/todos" do 
+  @list_id = params[:id].to_i
+  @list = session[:lists][@list_id]
   todo = params[:todo].strip
-  id = params[:id].to_i
 
-  error = error_for_todo(todo, id)
+  error = error_for_todo(todo) #, id)
   if error
     session[:error] = error
+    erb :list, layout: :layout
   else
-    list = session[:lists][id]
-    list[:todos] << {name: params[:todo], completed: false}
+    @list[:todos] << {name: todo, completed: false}
     session[:success] = "The todo was added."
+    redirect "/lists/#{@list_id}"
   end
 
-  redirect "/lists/#{id}"
 end
 
 # change list properties
 post "/lists/:id" do
   list_name = params[:list_name].strip
-  id = params[:id].to_i
-  @list = session[:lists][id]
+  @list_id = params[:id].to_i
+  @list = session[:lists][@list_id]
   
   error = error_for_list_name(list_name)
   if error
@@ -123,14 +124,14 @@ post "/lists/:id" do
   else
     @list[:name] = list_name
     session[:success] = "The list has been updated."
-    redirect "/lists/#{id}"
+    redirect "/lists/#{@list_id}"
   end
 end
 
 # deletes list
 post "/lists/:id/destroy" do
-  id = params[:id].to_i
-  session[:lists].delete_at(id)
+  @list_id = params[:id].to_i
+  session[:lists].delete_at(@list_id)
   session[:success] = "The list has been deleted."
   redirect "/lists"
 end

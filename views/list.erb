@@ -4,7 +4,7 @@
     <h2><%= @list[:name] %></h2>
     <ul>
       <li>
-        <a class="edit" href='/lists/<%= params[:id] %>/edit'>Edit list</a>
+        <a class="edit" href="/lists/<%= @list_id %>/edit">Edit list</a>
       </li>
     </ul>
   </header>
@@ -19,13 +19,13 @@
 
 </section>
 
-<form action="/lists/<%= params[:id] %>/todos" method="post">
+<form action="/lists/<%= @list_id %>/todos" method="post">
   <dl>
     <dt>
       <label for="todo">Enter a new todo item:</label>
     </dt>
     <dd>
-      <input name="todo" id="todo" placeholder="Something to do" type="text" value="">
+      <input name="todo" id="todo" placeholder="Something to do" type="text" value="<%= params[:todo] %>">
     </dd>
   </dl>
   <fieldset class="actions">
