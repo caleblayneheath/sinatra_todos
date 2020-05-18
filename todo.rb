@@ -148,12 +148,26 @@ post "/lists/:list_id/todos/:id/destroy" do
 end
 
 # complete/uncomplete todo
-post "/lists/:list_id/todos/:id/check" do
+post "/lists/:list_id/todos/:id" do
   @list_id = params[:list_id].to_i
   @list = session[:lists][@list_id]
   
   todo_id = params[:id].to_i
-  @list[:todos][todo_id][:completed] = !@list[:todos][todo_id][:completed]
-  session[:success] = "#{@list[:todos][todo_id][:completed]}The todo has been updated."
+  is_completed = params[:completed] == 'true'
+  @list[:todos][todo_id][:completed] = is_completed
+  session[:success] = "The todo has been updated."
+  redirect "/lists/#{@list_id}"
+end
+
+# complete all todos
+post "/lists/:list_id/complete_all" do
+  @list_id = params[:list_id].to_i
+  @list = session[:lists][@list_id]
+  
+  @list[:todos].each do |todo|
+    todo[:completed] = true
+  end
+
+  session[:success] = "All todos have been completed."
   redirect "/lists/#{@list_id}"
 end
