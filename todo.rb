@@ -8,6 +8,49 @@ configure do
   set :session_secret, 'secret'
 end
 
+# accessible in both routes and view templates, but should be reserved only for views
+helpers do
+  def todos_remaining(list)
+    list[:todos].reject { |todo| todo[:completed] }.size
+  end
+
+  def todos_count(list)
+    list[:todos].size
+  end
+
+  def list_complete?(list)
+    todos_count(list) > 0 && todos_remaining(list) == 0
+  end
+
+  def list_class(list)
+    "complete" if list_complete?(list)
+  end
+
+  def sort_lists(lists, &block)   
+    complete_lists, incomplete_lists = lists.partition { |list| list_complete?(list) }
+    
+    # using index may result in error if lists has nonunique values
+    incomplete_lists.each { |list| yield(list, lists.index(list)) }
+    complete_lists.each { |list| yield(list, lists.index(list)) }
+  end
+
+  def sort_todos(todos, &block)
+    incomplete_todos = {}
+    complete_todos = {}
+    
+    todos.each_with_index do |todo, index|
+      if todo[:completed]
+        complete_todos[todo] = index
+      else
+        incomplete_todos[todo] = index
+      end
+    end
+    
+    incomplete_todos.each(&block)
+    complete_todos.each(&block)
+  end
+end
+
 before do
   session[:lists] ||= []
 end
@@ -30,7 +73,7 @@ end
 
 # view all lists
 get "/lists" do
-  @lists = session[:lists]
+  @lists = session[:lists]#.sort_by { |list| list_complete?(list) ? 1 : 0 }
   erb :lists, layout: :layout
 end
 
