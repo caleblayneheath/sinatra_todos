@@ -1,5 +1,5 @@
 require "sinatra"
-require "sinatra/reloader"
+require "sinatra/reloader" if development?
 require "sinatra/content_for"
 require "tilt/erubis"
 
@@ -29,43 +29,21 @@ helpers do
   def sort_lists(lists, &block)   
     complete_lists, incomplete_lists = lists.partition { |list| list_complete?(list) }
     
-    # using index may result in error if lists has nonunique values
     incomplete_lists.each { |list| yield(list, lists.index(list)) }
     complete_lists.each { |list| yield(list, lists.index(list)) }
   end
 
   def sort_todos(todos, &block)
-    incomplete_todos = {}
-    complete_todos = {}
+    complete_todos, incomplete_todos = todos.partition { |todo| todo[:completed] }
     
-    todos.each_with_index do |todo, index|
-      if todo[:completed]
-        complete_todos[todo] = index
-      else
-        incomplete_todos[todo] = index
-      end
-    end
-    
-    incomplete_todos.each(&block)
-    complete_todos.each(&block)
+    incomplete_todos.each { |todo| yield(todo, todos.index(todo)) }
+    complete_todos.each { |todo| yield(todo, todos.index(todo)) }
   end
 end
 
 before do
   session[:lists] ||= []
 end
-
-=begin
-these URLs are resouce based, lists is the name of a resource being worked with
-GET /lists
-GET /lists/new
-POST /lists
-GET /lists/1
-
-example
-GET /users
-GET /users/1
-=end
 
 get "/" do
   redirect "/lists"
