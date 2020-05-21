@@ -161,9 +161,15 @@ end
 post "/lists/:id/destroy" do
   @list_id = params[:id].to_i
   session[:lists].delete_at(@list_id)
-  session[:success] = "The list has been deleted."
-  redirect "/lists"
-end
+
+  # returns default status of 200
+  if env["HTTP_X_REQUESTED_WITH"] == 'XMLHttpRequest'
+    "/lists"
+  else
+    session[:success] = "The list has been deleted."
+    redirect "/lists"
+  end
+ end
 
 # delete todo from list
 post "/lists/:list_id/todos/:id/destroy" do
@@ -172,8 +178,17 @@ post "/lists/:list_id/todos/:id/destroy" do
   
   todo_id = params[:id].to_i
   @list[:todos].delete_at(todo_id)
-  session[:success] = "The todo has been deleted."
-  redirect "/lists/#{@list_id}"
+
+  # env is hash containing parts of request,
+  # accessing the appropriate header 
+  # (which has been standardized with caps, _, and prepended with HTTP)
+  if env["HTTP_X_REQUESTED_WITH"] == 'XMLHttpRequest'
+    # 204 means successful but no content
+    status 204
+  else
+    session[:success] = "The todo has been deleted."
+    redirect "/lists/#{@list_id}"
+  end
 end
 
 # complete/uncomplete todo
